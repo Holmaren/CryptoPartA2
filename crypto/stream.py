@@ -36,6 +36,12 @@ class StreamCipher:
         self.a =  0 # Supplementary Key A for Stream Cipher
         self.b = 0 # Supplementary Key B for Stream Cipher
         self.r_i = 0 # Shift Register 
+
+		#Get the initial shift register
+		reset()
+		#Derive a and b
+		self.a=auxillary.deriveSupplementaryKey(self.dh_key,p1)
+		self.b=auxillary.deriveSupplementaryKey(self.dh_key,p2)
         # ======== END IMPLEMENTATION ===============
 
     # =============== ADD CLASS ADDITIONAL METHODS ==================
@@ -53,7 +59,8 @@ class StreamCipher:
             nothing
         """
         # ======== IMPLEMENTATION GOES HERE =========
-        
+        newRi=(self.a*self.r_i+self.b)%self.dh_p
+		self.r_i=newRi
 
         # ======== END IMPLEMENTATION ===============
         return None
@@ -70,6 +77,8 @@ class StreamCipher:
         """
         # ======== IMPLEMENTATION GOES HERE =========
         
+		
+
 
         # ======== END IMPLEMENTATION ===============
         return new_msg
@@ -84,12 +93,15 @@ class StreamCipher:
             nothing
         """
         # ======== IMPLEMENTATION GOES HERE =========
+		
+		r0=auxillary.parityWordChecksum(self.dh_key)
+		self.r_i=r0
 
         # ======== END IMPLEMENTATION ===============
         return None
 
     # =============== ADD CLASS ADDITIONAL METHODS ==================
-  
+	
     # =============== END CLASS ADDTIONAL METHODS ===================
 
 # ============== ADD HELPER FUNCTIONS HERE =========================
