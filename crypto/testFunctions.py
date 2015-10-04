@@ -2,6 +2,9 @@
 
 import supplementary as sup
 from base64 import b64encode, b64decode 
+import dhex
+import stream
+
 
 print "-----------------TESTING------------------"
 
@@ -26,13 +29,57 @@ msb=sup.msb(13892949480140891204)
 
 print "MSB: " + str(msb)
 
-msg="Hejsan +02+03++++??// +203+"
 
-enc=b64encode(msg)
+print "-----------Testing stream----------------"
 
-print "Not encoded"
-print sup.checkIfBase64Compatible(msg)
+cipher=stream.StreamCipher(4L,11,3,5)
+
+#Encrypt
+
+plainText=""
+
+#print "############### PLAIN TEXT ##############"
 
 
-print "Encoded one"
-print sup.checkIfBase64Compatible(enc)
+for line in open("plaintext.txt"):
+	plainText=plainText+line
+
+#print plainText
+
+cipherText=""
+
+for line in open("cipherText.txt"):
+	cipherText=cipherText+line
+
+#print "############ CIPHER TEXT #################" 
+#print cipherText
+
+
+encrypted=cipher.encrypt(plainText)
+
+print "############### ENCRYPTED TEXT #############" 
+print encrypted
+
+print "Encryption:" + encrypted==cipherText
+
+cipher.reset()
+
+decrypted=cipher.decrypt(cipherText)
+
+
+print "Decryption:" + decrypted.strip()==plainText.strip()
+
+print "################# DECRYPTED TEXT ############"
+print decrypted
+
+cipher.reset()
+
+
+decrypt2=cipher.decrypt(encrypted)
+
+print "########## DECRYPT ENCRYPTED ###########"
+print decrypt2==plainText
+
+
+
+

@@ -9,7 +9,9 @@
 #   - After you've implemented this, remember to write a few lines to comment
 #   on the security of this cipher as specified in the Project Specifications
 
-import cryptoclient.crypto.supplementary as auxillary
+#import cryptoclient.crypto.supplementary as auxillary
+
+import supplementary as auxillary
 
 from base64 import b64encode, b64decode 
 
@@ -37,11 +39,11 @@ class StreamCipher:
         self.b = 0 # Supplementary Key B for Stream Cipher
         self.r_i = 0 # Shift Register 
 
-		#Get the initial shift register
-		reset()
-		#Derive a and b
-		self.a=auxillary.deriveSupplementaryKey(self.dh_key,p1)
-		self.b=auxillary.deriveSupplementaryKey(self.dh_key,p2)
+        #Get the initial shift register
+        self.reset()
+        #Derive a and b
+        self.a=auxillary.deriveSupplementaryKey(self.dh_key,p1)
+        self.b=auxillary.deriveSupplementaryKey(self.dh_key,p2)
         # ======== END IMPLEMENTATION ===============
 
     # =============== ADD CLASS ADDITIONAL METHODS ==================
@@ -59,8 +61,8 @@ class StreamCipher:
             nothing
         """
         # ======== IMPLEMENTATION GOES HERE =========
-        newRi=(self.a*self.r_i+self.b)%self.dh_p
-		self.r_i=newRi
+        newRi=(self.a*self.r_i+self.b) % self.p
+        self.r_i=newRi
 
         # ======== END IMPLEMENTATION ===============
         return None
@@ -77,8 +79,22 @@ class StreamCipher:
         """
         # ======== IMPLEMENTATION GOES HERE =========
         
-		
+        new_msg=""
+        new_msg_array=[]
+        #Iterate the bytearray of the msg
+        for byte in bytearray(msg):
+            
+            #For every byte perform the encipher/decipher function
+            newByte=byte^auxillary.msb(self.r_i)
+            #Update the register
+            self.updateShiftRegister()
+            #Append the new byte to the new message array
+            new_msg_array.append(newByte)
 
+        #Turn the new_msg_array into a byte array
+        new_msg_array=bytearray(new_msg_array)
+
+        new_msg=str(new_msg_array)		
 
         # ======== END IMPLEMENTATION ===============
         return new_msg
@@ -94,14 +110,33 @@ class StreamCipher:
         """
         # ======== IMPLEMENTATION GOES HERE =========
 		
-		r0=auxillary.parityWordChecksum(self.dh_key)
-		self.r_i=r0
+        r0=auxillary.parityWordChecksum(self.dh_key)
+        self.r_i=r0
 
         # ======== END IMPLEMENTATION ===============
         return None
 
     # =============== ADD CLASS ADDITIONAL METHODS ==================
 	
+    def encrypt(self,msg):
+		
+        #Get the new message
+        new_msg=self._crypt(msg)
+        #Encoded it with base64 encoding
+        new_msg=b64encode(new_msg)
+		
+        return new_msg
+
+    def decrypt(self,msg):
+		
+        #This msg is in base64 encoded so we need to decode this
+        msg=b64decode(msg)
+        #Then we get the plain text
+        new_msg=self._crypt(msg)
+
+        return new_msg		
+		
+
     # =============== END CLASS ADDTIONAL METHODS ===================
 
 # ============== ADD HELPER FUNCTIONS HERE =========================
