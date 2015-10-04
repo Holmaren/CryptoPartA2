@@ -21,7 +21,7 @@ import cryptoclient.util.error
 
 CLIENT_CORPUS_PATH = "cryptoclient/corpus.txt"
 
-DEST_HOST = ''
+DEST_HOST = 'dimefox.eng.unimelb.edu.au'
 DEST_PORT = 8001
 
 NETWORK_DEBUG = True

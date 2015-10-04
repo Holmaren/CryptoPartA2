@@ -9,9 +9,9 @@
 #   - After you've implemented this, remember to write a few lines to comment
 #   on the security of this cipher as specified in the Project Specifications
 
-#import cryptoclient.crypto.supplementary as auxillary
+import cryptoclient.crypto.supplementary as auxillary
 
-import supplementary as auxillary
+#import supplementary as auxillary
 
 from base64 import b64encode, b64decode 
 

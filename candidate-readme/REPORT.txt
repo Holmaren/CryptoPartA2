@@ -1,0 +1,32 @@
+a. Stream Cipher
+When using a pseudorandom number generator to produce a stream of bits the sequence of bits will eventually repeat and the security of a stream cipher depends on the size of this period, i.e. the number of distinct streams that the pseudorandom generator can produce. When updating the shift register in our implementation we take a value modulu p, which means that the size of our period depends upon p. Therefore if we use a small value of p the period will be small and the cipher will not be very secure. As an initial seed for our stream cipher we are using a 64bit number. Using a 64bit number as a seed makes the stream cipher vulnerable to brute-force attacks, it would be better to use larger numbers, such as 128bit or 256bit. I would not use this stream cipher to secure anything that needs to be kept a secret for a longer period of time. 
+
+b. Man in the Middle
+To perform a Man in the Middle attack using the provided code and protocol we first have to make the client connect to a proxy server, i.e. a server that sits in between the client and the actual server. The proxy server is our malicious server that will act as the Man in the Middle and this server will be able to monitor and change all messages send between the client and the actual server that the client wants to communicate with. In the first "Hello Phase" the proxy server can just pass the messages along between the client and server. In the "DH Key Exchange Phase" the proxy server has the option to alter the messages sent between the client and server to create shared common keys with each side, but in this protocol the client actually sends the shared common secret between the client and the actual server in plain text as part of the CLIENT_DHEX_DONE() response which means that the Man in the Middle doesn't necessarily have to generate and create shared keys with the two sides as long as he intercepts this message and retreives the shared key. 
+
+In the "specification phase" the Man in the Middle has to intercept the message containing the primes p1 and p2 and when this has been done he will have everything he needs to generate the same pseudorandom generator used in the stream cipher as the client and the server. When the Man in the Middle has this he can encrypt and decrypt every message sent between the client and the server and also alter these messages. The only thing that the Man in the Middle has to think about is to also change the messages containing the length of a line that is sent for every line that is changed so that the specified length matches the new altered message. This message containing the length of the following line is sent before the line and therefore the Man in the Middle either have to decide beforehand what to send in the next message and change the length to match this or he is limited by the length that was sent and then make a message to match this. If, as in the Man in the Middle implementation in this project, the same string is appended to every message the length of this string can just be added to the length of every line/message sent.
+
+More specific, what we first have to do is create a socket that the client connects to and that connects to the server. For the "DH key exchange phase" a function that intercepts the messages to perform a Man in the Middle attack would look like this:
+
+InterceptDHKeyExchangePhase():
+	Retrieve CLIENT_DHEX_START() message and forward to the server
+	Retrieve SERVER_DHEX(g,p,g^b), store the information and forward to the client
+	Retrieve and forward the CLIENT_DHEX(g^a) to the server
+	Retrieve and foward the SERVER_DHEX_DONE() to the client
+	Retrieve the CLIENT_DHEX_DONE(g^ab), store the key and forward to the server
+	Retrieve SERVER_SPEC([n_lines],p1,p2)
+	Use g^ab,p,p1 and p2 to initialize the Stream ciper
+
+To alter a message between the client and server a function would look something like this. The message names here indicate a message sent from the server to the client but a function to intercept and alter messages in the opposit direction works in the same way.
+
+AlterMessage():
+	Intercept SERVER_NEXT_LENGTH(line_id,length) 
+	Alter the length to match what we want to send in the next message and forward the message
+	Intercept CLIENT_NEXT_LENGTH_RECV(), if it contains the message length change this back to what the server had specified and forward
+	Intercept SERVER_TEXT(line_id,encrypted_text)
+	Decrypt the text, alter the text, encrypt the altered text and forward to the Client
+	Intercept and forward CLIENT_TEXT_RECV()
+
+
+As a conclusion, this protocol is vulnerable to a simple Man in the Middle attack because the client sends the shared key in plain text. 
+
